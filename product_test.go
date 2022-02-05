@@ -1,31 +1,37 @@
 package swell
 
 import (
-	"fmt"
-	"net/http"
+	"encoding/json"
 	"testing"
+
+	. "github.com/onsi/gomega"
 )
 
 func TestTextSize(t *testing.T) {
-	text, _ := getStaticJson()
+	text := getStaticJson()
 	if len(text) < 100 {
 		t.Fatal("short texts")
 	}
 }
 
-func TestProductParse(t *testing.T) {
-	bytes, _ := getStaticJson()
-	results, err := parseBytes(bytes)
+func TestCheckParse(t *testing.T) {
+	g := NewWithT(t)
+	// text := getStaticJson()
+	// results := Results{}
+	// _ = json.Unmarshal(text, &results)
+	// assert.Equal(t, results.Sku, "TV-MM-KBS-BL", "The two words should be the same.")
+	results := Results{}
+	err := json.Unmarshal(getStaticJson(), &results)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if( len (results) != 3) {
-		t.Fatal("wrong result size")
-	}
-	fmt.Printf("%v", len(results))
+	g.Expect(results.Results[1].Sku).To(Equal("TV-MM-KBS-BL"), "The two words should be the same.")
+	g.Expect(results.Results[0].Purchase_Options["standard"].Price).Should(Equal(45.0), "Wrong standard price.")
+	g.Expect(results.Results[0].Purchase_Options["standard"].Active).To(BeTrue(), "standard price Active mismatch.")
+	g.Expect(results.Results[0].Purchase_Options["standard"].Active).To(BeTrue(), true, "standard price Active mismatch.")
 }
 
-func getStaticJson() ([]byte, error) {
+func getStaticJson() []byte {
 	text := `{
 		"count": 3,
 		"results": [
@@ -188,5 +194,5 @@ func getStaticJson() ([]byte, error) {
 		],
 		"page": 1
 	  }`
-	return []byte(text), nil
+	return []byte(text)
 }

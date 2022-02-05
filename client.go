@@ -23,6 +23,10 @@ type AuthStruct struct {
 	Secret string
 }
 
+type Error struct {
+	Errors map[string]map[string]interface{} `json:"errors"`
+}
+
 func NewClient() (*Client, error) {
 	c := Client{
 		HostUrl: swellUrl,
@@ -48,17 +52,17 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		log.Fatal(getErr)
 	}
 
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-
 	if res.StatusCode != 200 {
 		return nil, fmt.Errorf("%v", res.StatusCode)
 	}
 
-	body, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-		log.Fatal(readErr)
+	if res.Body != nil {
+		defer res.Body.Close()
+		body, readErr := ioutil.ReadAll(res.Body)
+		if readErr != nil {
+			log.Fatal(readErr)
+		}
+		return body, nil
 	}
-	return body, nil
+	return nil, nil
 }
