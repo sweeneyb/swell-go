@@ -75,7 +75,8 @@ func (c *Client) getRequest(isUpdate bool, category Category) (*http.Request, er
 		fmt.Println("doing post")
 		data := url.Values{}
 		data.Set("name", category.Name)
-		data.Set("descrption", category.Description)
+		data.Set("description", category.Description)
+		data.Set("active", strconv.FormatBool(category.Active))
 
 		req, err := http.NewRequest("POST", fmt.Sprintf("%s/categories", c.HostUrl), strings.NewReader(data.Encode()))
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -126,4 +127,17 @@ func (c *Client) MutateCategory(isUpdate bool, category Category) (Category, err
 		return result, err
 	}
 	return result, nil
+}
+
+func (c *Client) DeleteCategory(category Category) error {
+
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/categories/%s", c.HostUrl, category.Id), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = c.doRequest(req)
+	if err != nil {
+		return err
+	}
+	return nil
 }
